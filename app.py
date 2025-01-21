@@ -24,7 +24,7 @@ def handle_exception(e):
     
 @app.route('/', methods=["GET"])
 def main():
-    pass
+    return "If you are wondering how to use this, check https://github.com/Brosssh/legendary-study-3.0"
 
 @app.route('/submitEID', methods=["POST"])
 def submit():
