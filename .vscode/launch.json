@@ -4,7 +4,6 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-    
         {
             "name": "Python Debugger: Flask",
             "type": "debugpy",
@@ -23,10 +22,16 @@
             "autoStartBrowser": false
         },
         {
-            "name": "Python Debugger",
+            "name": "Debug debug.py",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/debug.py",
+            "console": "integratedTerminal"
+        },{
+            "name": "Debug calc_daily_report.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/calc_daily_report.py",
             "console": "integratedTerminal"
         }
     ]

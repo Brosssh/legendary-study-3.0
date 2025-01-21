@@ -6,10 +6,13 @@ from backend.api_backend import submitEID
 import backend.errors
 
 load_dotenv()
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
-mongo_instance = mongo_manager.mongo_manager()
+logger = logging.getLogger()
+logging.basicConfig(level=logging.INFO)
+
+#Initialize clusters
+mongo_manager.MongoUserCluster()
+mongo_manager.MongoReportCluster()
 
 app = Flask(__name__)
 

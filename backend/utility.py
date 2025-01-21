@@ -2,6 +2,10 @@ import datetime
 import hashlib
 import os
 
+from backend.errors import NoEnvValue
+
+ZLC_SHIP = "ATREGGIES:EPIC"
+
 def _xor_string(input_string: str):
     xor_key = os.getenv('XOR_KEY')
     if not xor_key:

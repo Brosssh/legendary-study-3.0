@@ -5,7 +5,6 @@ import re
 from collections import Counter
 from backend import auxbrain_api
 from backend import utility
-from backend.errors import CorruptGameId
 from backend.proto.ei import ArtifactSpecRarity
 from backend.utility import hash_str
 from backend import mongo_manager
@@ -18,14 +17,21 @@ def submitEID(EID):
     
     hashed_eid = hash_str(EID)
     
-    mongo_instance = mongo_manager.mongo_manager()
+    logger.info(f"Initializing cluster")
+    mongo_instance = mongo_manager.MongoUserCluster()
+
+    logger.info(f"Getting doc for EID {hashed_eid}")
     user = mongo_instance.get_doc_from_eid(hashed_eid)
+
     if user and user["cheater"]:
         logger.info(f"Skipping hash {hashed_eid} since cheater")
+        return
     
     if user and (user["date_insert"].replace(tzinfo=timezone.utc) + timedelta(hours=1)) > utility.now_utc():
         logger.info(f"Not updating hash {hashed_eid} since backup is recent")
+        return
 
+    logger.info(f"Processing EID {hashed_eid}")
     backup = auxbrain_api.get_player_data(EID)
 
     doc = {"EID": hashed_eid}
