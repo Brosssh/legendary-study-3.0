@@ -1,0 +1,7 @@
+Flask==3.1.0
+betterproto=2.0.0b7
+pymongo==4.10.1
+protobuf==5.29.3
+requests==2.32.3
+pytz==2024.2
+python-dotenv==1.0.1
