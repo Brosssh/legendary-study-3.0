@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import datetime
 from datetime import timedelta, datetime as dt2
 import logging
@@ -56,12 +57,12 @@ class MongoUserCluster(BaseMongoManager):
         date_limit = utility.now_utc() - timedelta(days=days)
         self.__get_coll__().delete_many({"date_insert": {"$lt": date_limit}})
 
-    def zlc_record(self) -> int:
+    def process_zlc_record(self) -> int:
         pipeline = [
             {
                 "$match": {
                     "cheater": False,
-                    f"ships_count.{ZLC_SHIP}": {"$exists": True, "$gt": 0},
+                    f"ships_count.{utility.ZLC_SHIP}": {"$exists": True, "$gt": 0},
                     "leg_arti_list": {"$size": 0},
                 }
             },
@@ -72,7 +73,7 @@ class MongoUserCluster(BaseMongoManager):
         doc_result = next(self.__get_coll__().aggregate(pipeline), None)
         return doc_result["ships_count"][utility.ZLC_SHIP] if doc_result else 0
 
-    def total_seen_legendaries(self) -> dict:
+    def process_total_seen_legendaries(self) -> dict:
         pipeline = [
             {"$match": {"cheater": False}},
             {"$project": {"leg_arti_list": {"$objectToArray": "$leg_arti_list"}}},
@@ -83,7 +84,6 @@ class MongoUserCluster(BaseMongoManager):
                     "v": {"$sum": "$leg_arti_list.v"},
                 }
             },
-            {"$sort": {"v": -1}},
         ]
 
         logger.info("Starting query for total_seen_legendaries")
@@ -91,7 +91,7 @@ class MongoUserCluster(BaseMongoManager):
         result = {x["_id"]: x["v"] for x in docs_result}
         return result
 
-    def legendaries_for_players(self) -> dict:
+    def process_legendaries_for_players(self) -> dict:
         pipeline = [
             {"$project": {"leg_arti_list": {"$objectToArray": "$leg_arti_list"}}},
             {
@@ -108,12 +108,11 @@ class MongoUserCluster(BaseMongoManager):
                 }
             },
             {"$group": {"_id": "$sum_leg_arti", "v": {"$sum": 1}}},
-            {"$sort": {"_id": -1}},
         ]
 
         logger.info("Starting query for legendaries_for_players")
         docs_result = self.__get_coll__().aggregate(pipeline)
-        result = {x["_id"]: x["v"] for x in docs_result}
+        result = OrderedDict({str(x["_id"]): x["v"] for x in docs_result})
         return result
 
 
@@ -128,4 +127,4 @@ class MongoReportCluster(BaseMongoManager):
         return mycol
 
     def get_last_report(self):
-        return next(self.__get_coll__().find().sort("date_insert", -1).limit(1), None)
+        return next(self.__get_coll__().find().sort("date_insert", -1).limit(1), dict())

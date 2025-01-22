@@ -4,30 +4,18 @@ from flask import Flask, jsonify, request
 from backend import mongo_manager
 from backend.api_backend import submitEID
 import backend.errors
+from backend.logger import init_logger
 
 load_dotenv()
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-# create console handler and set level to debug
-ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
-
-# create formatter
-formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s")
-
-# add formatter to ch
-ch.setFormatter(formatter)
-
-# add ch to logger
-logger.addHandler(ch)
+init_logger()
 
 #Initialize clusters
 mongo_manager.MongoUserCluster()
 mongo_manager.MongoReportCluster()
 
 app = Flask(__name__)
+logger = logging.getLogger(__name__)
 
 @app.errorhandler(Exception)
 def handle_exception(e):
