@@ -31,9 +31,10 @@ def submitEID(EID):
         logger.info(f"Not updating hash {hashed_eid} since backup is recent")
         return
 
-    logger.info(f"Processing EID {hashed_eid}")
+    logger.info(f"Asking backup for user EID {hashed_eid}")
     backup = auxbrain_api.get_player_data(EID)
 
+    logger.info(f"Got auxbrain backup for EID {hashed_eid}")
     doc = {"EID": hashed_eid}
     
     ships_count = Counter(f"{el.ship}:{el.duration_type}" for el in backup.artifacts_db.mission_archive)
