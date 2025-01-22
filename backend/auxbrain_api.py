@@ -6,7 +6,7 @@ import logging
 from backend.errors import CorruptGameId
 from backend.proto.ei import *
 
-base_url = "https://ctx-dot-auxbrainhome.appspot.com/"
+base_url = "https://auxbrain.com/"
 logger = logging.getLogger(__name__)
 CURRENT_CLIENT_VERSION = 68
 
