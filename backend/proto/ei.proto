@@ -79,7 +79,7 @@ message MissionInfo {
     }
     
     optional uint32 level = 12;
-    optional string identifier = 7;
+    optional bytes identifier = 7;
 }
 
 message ArtifactSpec {
