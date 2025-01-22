@@ -39,7 +39,8 @@ def get_player_data(EID) -> Backup:
     serialized_request = _serialize(serializer)
     
     response = requests.post(url, data = { 'data' : serialized_request})
-
+    logger.info("Got backup... decoding")
+    
     if not response:
         raise CorruptGameId(EID)
     decoded_response = _deserialize(response.text, EggIncFirstContactResponse())
