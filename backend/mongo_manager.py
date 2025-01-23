@@ -41,21 +41,18 @@ class MongoUserCluster(BaseMongoManager):
         super().__init__()
         self.connect(user_cluster=True)
 
-    def __get_coll__(self):
-        mydb = self.client["players_db"]
-        mycol = mydb["players_collection"]
-        return mycol
+        self.collection = self.client["players_db"]["players_collection"]
 
     def get_doc_from_eid(self, hashed_eid):
-        return self.__get_coll__().find_one({"EID": hashed_eid})
+        return self.collection.find_one({"EID": hashed_eid})
 
     def upsert_user_doc(self, doc):
         logger.info(f"Upserting doc for hash {doc["EID"]}")
-        self.__get_coll__().replace_one({"EID": doc["EID"]}, doc, upsert=True)
+        self.collection.replace_one({"EID": doc["EID"]}, doc, upsert=True)
 
     def remove_old_users(self, days: int = 30):
         date_limit = utility.now_utc() - timedelta(days=days)
-        self.__get_coll__().delete_many({"date_insert": {"$lt": date_limit}})
+        self.collection.delete_many({"date_insert": {"$lt": date_limit}})
 
     def process_zlc_record(self) -> int:
         pipeline = [
@@ -70,7 +67,7 @@ class MongoUserCluster(BaseMongoManager):
             {"$limit": 1},
         ]
         logger.info("Starting query for zlc_record")
-        doc_result = next(self.__get_coll__().aggregate(pipeline), None)
+        doc_result = next(self.collection.aggregate(pipeline), None)
         return doc_result["ships_count"][utility.ZLC_SHIP] if doc_result else 0
 
     def process_total_seen_legendaries(self) -> dict:
@@ -87,7 +84,7 @@ class MongoUserCluster(BaseMongoManager):
         ]
 
         logger.info("Starting query for total_seen_legendaries")
-        docs_result = self.__get_coll__().aggregate(pipeline)
+        docs_result = self.collection.aggregate(pipeline)
         result = {x["_id"]: x["v"] for x in docs_result}
         return result
 
@@ -111,7 +108,7 @@ class MongoUserCluster(BaseMongoManager):
         ]
 
         logger.info("Starting query for legendaries_for_players")
-        docs_result = self.__get_coll__().aggregate(pipeline)
+        docs_result = self.collection.aggregate(pipeline)
         result = OrderedDict({str(x["_id"]): x["v"] for x in docs_result})
         return result
 
@@ -121,10 +118,17 @@ class MongoReportCluster(BaseMongoManager):
         super().__init__()
         self.connect(user_cluster=False)
 
-    def __get_coll__(self):
-        mydb = self.client["reports"]
-        mycol = mydb["reports_collection"]
-        return mycol
+        self.collection = self.client["reports"]["reports_collection"]
 
-    def get_last_report(self):
-        return next(self.__get_coll__().find().sort("date_insert", -1).limit(1), dict())
+        self.reports_timestamp = [el["date_insert"] for el in list(self.collection.find({},{"date_insert":1, "_id":0}).sort("date_insert", -1))]
+        self.latest_report = next(self.collection.find().sort("date_insert", -1).limit(1), dict())
+    
+    def get_report_by_date_str(self, date_str: str):
+        file = self.collection.find_one({"date_insert": date_str})
+        if file is None:
+            return None
+        else:
+            del file["_id"]
+
+    def update_report_dates(self):
+        self.reports_timestamp = [el["date_insert"] for el in list(self.collection.find({},{"date_insert":1, "_id":0}).sort("date_insert", -1))]
