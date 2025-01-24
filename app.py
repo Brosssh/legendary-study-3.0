@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from flask import Flask, json, jsonify, request
 from flasgger import Swagger
 from backend import mongo_manager
-from backend.api_backend import submitEID
+from backend.api_backend import get_report, submitEID
 import backend.errors
 from backend.logger import init_logger
 
@@ -37,6 +37,13 @@ def handle_exception(e):
     if isinstance(e, backend.errors.CorruptGameId):
         logger.warning(f"EID {e} seems to be corrupted")
         return jsonify({'message': "EID corrupted"}), 412
+    if isinstance(e, backend.errors.InvalidReportDate):
+        return jsonify({'message': f"No report found for the given date {e}"}), 412
+    if isinstance(e, backend.errors.InvalidDateFormat):
+        return jsonify({'message': f"Date {e} is not valid. Date format should be 'YYYY-MM-DD' ('2024-12-30')"}), 412
+    if isinstance(e, backend.errors.BadRequest):
+        return jsonify({'message': f"Missing required parameter '{e}'. Check the API documentation at https://legendary-study-3-0.vercel.app/apidocs/"}), 400
+    
     else:
         logger.error(e)
         return jsonify({'message': "Something went wrong, contact an administrator"}), 500
@@ -67,43 +74,33 @@ def submit():
       200:
         description: EID submitted successfully
       412:
-        description: Invalid or missing EID
+        description: Invalid EID
+      400:
+        description: Missing EID
     """
-    EID = request.form.get('EID')
+    EID = request.form.get('EID', default=None)
     submitEID(EID)
     return {'message': "OK"}
 
 @app.route('/getReportByDate', methods=["GET"])
 def getReportByDate():
     """
-    Get reports by a specific date
+    Get reports by a specific date. If 'date' is not specified, return the latest report.
     ---
     parameters:
       - name: date
         in: query
         type: string
-        required: true
-        description: The date in YYYY-MM-DD format.
+        required: false
+        description: The date in YYYY-MM-DD format. Empty if you want the latest report.
     responses:
       200:
         description: A list of reports for the given date.
       412:
         description: Invalid date format
     """
-    date = request.args.get('date') #TODO date check
-    response = json.jsonify(mongo_reports.get_report_by_date_str(date))
-    return response
-
-@app.route('/getLatestReport', methods=["GET"])
-def getLatestReport():
-    """
-    Get the latest report
-    ---
-    responses:
-      200:
-        description: The latest loaded report.
-    """
-    response = json.jsonify(mongo_reports.latest_report)
+    date = request.args.get('date', default=None)
+    response = json.jsonify(get_report(date))
     return response
 
 @app.route('/getTimestampsReport', methods=["GET"])

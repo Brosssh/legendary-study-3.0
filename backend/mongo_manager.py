@@ -1,8 +1,6 @@
 from collections import OrderedDict
-import datetime
-from datetime import timedelta, datetime as dt2
+from datetime import timedelta
 import logging
-import pymongo
 from pymongo import MongoClient
 import os
 from backend import utility
@@ -119,16 +117,28 @@ class MongoReportCluster(BaseMongoManager):
         self.connect(user_cluster=False)
 
         self.collection = self.client["reports"]["reports_collection"]
+        self.update_cached_results()
 
-        self.reports_timestamp = [el["date_insert"] for el in list(self.collection.find({},{"date_insert":1, "_id":0}).sort("date_insert", -1))]
-        self.latest_report = next(self.collection.find().sort("date_insert", -1).limit(1), dict())
-    
+    def _clean_report(self, report: str | None):
+        if not report:
+            return report
+        
+        assert '_id' in report, "doc has no '_id'"
+        report.pop('_id')
+        return report
+
+
     def get_report_by_date_str(self, date_str: str):
-        file = self.collection.find_one({"date_insert": date_str})
-        if file is None:
-            return None
-        else:
-            del file["_id"]
+        report = self.collection.find_one({"date_insert": date_str})
+        return self._clean_report(report)
 
-    def update_report_dates(self):
+    def _update_latest_report(self):
+       last_doc = next(self.collection.find().sort("date_insert", -1).limit(1), None)
+       self.latest_report = self._clean_report(last_doc)
+
+    def _update_report_dates(self):
         self.reports_timestamp = [el["date_insert"] for el in list(self.collection.find({},{"date_insert":1, "_id":0}).sort("date_insert", -1))]
+    
+    def update_cached_results(self):
+        self._update_report_dates()
+        self._update_latest_report()

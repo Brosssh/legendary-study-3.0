@@ -5,6 +5,7 @@ import re
 from collections import Counter
 from backend import auxbrain_api
 from backend import utility
+from backend.errors import BadRequest, InvalidDateFormat, InvalidReportDate
 from backend.proto.ei import ArtifactSpecRarity
 from backend.utility import hash_str
 from backend import mongo_manager
@@ -12,6 +13,9 @@ from backend import mongo_manager
 logger = logging.getLogger(__name__)
 
 def submitEID(EID):
+    if not EID:
+        raise BadRequest("EID")
+
     if not re.match(r"^EI\d{16}$", EID):
         return
     
@@ -59,3 +63,18 @@ def submitEID(EID):
     doc["date_insert"] = utility.now_utc() 
 
     mongo_instance.upsert_user_doc(doc)
+
+def get_report(date_str: str | None):
+    mongo_instance = mongo_manager.MongoReportCluster()
+
+    if not date_str:
+        report = mongo_instance.latest_report
+    else:
+        if not re.match(r'^\d{4}-\d{2}-\d{2}$', date_str):
+            raise InvalidDateFormat(date_str)
+        
+        report = mongo_instance.get_report_by_date_str(date_str)
+        if not report:
+            raise InvalidReportDate(date_str)
+    
+    return report 

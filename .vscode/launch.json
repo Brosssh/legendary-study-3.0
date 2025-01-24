@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": "Python Debugger: Flask",
             "type": "debugpy",
@@ -32,6 +33,12 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/calc_daily_report.py",
+            "console": "integratedTerminal"
+        },{
+            "name": "Run migration script",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/migrate_old_reports.py",
             "console": "integratedTerminal"
         }
     ]
