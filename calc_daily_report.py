@@ -10,7 +10,7 @@ mongo_users = mongo_manager.MongoUserCluster()
 mongo_reports = mongo_manager.MongoReportCluster()
 
 logger.info("Removing old users...")
-# mongo_users.remove_old_users()
+mongo_users.remove_old_users()
 
 logger.info("Starting new report process...")
 
