@@ -29,5 +29,5 @@ def hash_str(input_string):
     
     return sha256.hexdigest()
 
-def now_utc() -> datetime:
+def now_utc() -> datetime.datetime:
     return datetime.datetime.now(datetime.timezone.utc)
