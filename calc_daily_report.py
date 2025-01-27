@@ -1,6 +1,6 @@
 import datetime
 import logging
-from backend import mongo_manager
+from backend import mongo_manager, utility
 from backend.logger import init_logger
 
 init_logger()
@@ -28,8 +28,16 @@ final_dict_report = {}
 final_dict_report["date_insert"] = today_date_str
 final_dict_report["leg_seen"] = mongo_users.process_total_seen_legendaries()
 final_dict_report["legendary_players"] = mongo_users.process_legendaries_for_players()
-final_dict_report["zlc_record"] = max(mongo_users.process_zlc_record(), last_valid_report["zlc_record"] if last_valid_report else 0)
 final_dict_report["number_total_users"]=mongo_users.collection.count_documents({})
+
+if ((new_zlc_record := mongo_users.process_zlc_record()) > last_valid_report["zlc_record"] if last_valid_report else -1): #If no reports, new ZLC by default
+    #New ZLC record
+    final_dict_report["zlc_record"] = {
+        "amount": new_zlc_record,
+        "registered_on": utility.now_utc().strftime('%Y-%m-%d')
+    }
+else:
+    final_dict_report["zlc_record"] = last_valid_report["zlc_record"]
 
 logger.info("Loading new report to MongoDB...")
 mongo_reports.collection.update_one({"date_insert": final_dict_report["date_insert"]}, {"$set": final_dict_report}, upsert=True) #Update just in case i want to recalcuate it for some reason

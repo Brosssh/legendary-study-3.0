@@ -68,13 +68,15 @@ def get_report(date_str: str | None):
     mongo_instance = mongo_manager.MongoReportCluster()
 
     if not date_str:
-        report = mongo_instance.latest_report
+        return mongo_instance.latest_report
     else:
         if not re.match(r'^\d{4}-\d{2}-\d{2}$', date_str):
             raise InvalidDateFormat(date_str)
         
+        if mongo_instance.latest_report["date_insert"] == date_str:
+            return mongo_instance.latest_report
+
         report = mongo_instance.get_report_by_date_str(date_str)
         if not report:
             raise InvalidReportDate(date_str)
-    
-    return report 
+        return report
