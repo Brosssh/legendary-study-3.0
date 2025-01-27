@@ -51,7 +51,7 @@ class MongoUserCluster(BaseMongoManager):
     def remove_old_users(self, days: int = 30):
         date_limit = utility.now_utc() - timedelta(days=days)
         result = self.collection.delete_many({"date_insert": {"$lt": date_limit}})
-        print(f"Deleted {result.deleted_count} users")
+        logger.info(f"Deleted {result.deleted_count} users")
 
 
     def process_zlc_record(self) -> int:
