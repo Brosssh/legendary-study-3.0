@@ -30,7 +30,7 @@ final_dict_report["leg_seen"] = mongo_users.process_total_seen_legendaries()
 final_dict_report["legendary_players"] = mongo_users.process_legendaries_for_players()
 final_dict_report["number_total_users"]=mongo_users.collection.count_documents({})
 
-if ((new_zlc_record := mongo_users.process_zlc_record()) > last_valid_report["zlc_record"] if last_valid_report else -1): #If no reports, new ZLC by default
+if ((new_zlc_record := mongo_users.process_zlc_record()) > last_valid_report["zlc_record"]["amount"] if last_valid_report else -1): #If no reports, new ZLC by default
     #New ZLC record
     final_dict_report["zlc_record"] = {
         "amount": new_zlc_record,
