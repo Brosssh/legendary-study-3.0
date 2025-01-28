@@ -60,7 +60,7 @@ class MongoUserCluster(BaseMongoManager):
                 "$match": {
                     "cheater": False,
                     f"ships_count.{utility.ZLC_SHIP}": {"$exists": True, "$gt": 0},
-                    "leg_arti_list": {"$size": 0},
+                    "leg_arti_list": {"$eq": {}},
                 }
             },
             {"$sort": {f"ships_count.{utility.ZLC_SHIP}": -1}},
