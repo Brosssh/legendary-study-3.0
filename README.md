@@ -27,4 +27,4 @@ I have created a [Swagger interface](https://legendary-study-3-0.vercel.app/apid
 
 
 ## 📙 Issues or suggestion
-In case of issues or suggestion, open a [GitHub issue](https://github.com/Brosssh/legendary-study-3.0/issues/new?template=Blank+issue) or contact me on Discord (brosssh). 
+In case of issues or suggestion, open a [GitHub issue](https://github.com/Brosssh/legendary-study-3.0/issues/new?template=Blank+issue) or contact me on Discord (brosssh)
